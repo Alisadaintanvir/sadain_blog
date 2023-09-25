@@ -1,5 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, request, render_template
+from send_mail import Email
 import requests
+
 
 posts = requests.get(url="https://api.npoint.io/e75bd82278527768f3d5").json()
 
@@ -16,9 +18,19 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route("/contact", methods=['GET', 'POST'])
 def contact():
-    return render_template("contact.html")
+    if request.method == 'GET':
+        return render_template("contact.html", heading_text='Contact Me')
+    else:
+        name = request.form['name']
+        email = request.form['email']
+        phone_number = request.form['number']
+        message = request.form['message']
+        email = Email(name, email, phone_number, message)
+        email.send_email()
+
+        return render_template("contact.html", heading_text='Successfully sent your message.')
 
 
 @app.route("/post/<int:index>")
